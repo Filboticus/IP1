@@ -1,0 +1,216 @@
+{
+  "main": {
+    "id": "ec5df706586478a4",
+    "type": "split",
+    "children": [
+      {
+        "id": "eb39e8500b1ac24d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d8404dee9e4eedb9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Game Design/Squads/Infantry Squads.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Infantry Squads"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b2f35e7a9ed4459b",
+    "type": "split",
+    "children": [
+      {
+        "id": "dcb441534c23bac5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fcbdc5de9b583229",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "d786bf26dca1c2b7",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "9b30420c68357540",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "d9acad77ec2a1dc1",
+    "type": "split",
+    "children": [
+      {
+        "id": "57317acf78908a27",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "484c9455b2dc2ebe",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "9cb11c277240d3d8",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "fc28c3eb59e53d80",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "c8099746d1cac16a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "4d5e3075e8a06788",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "d8404dee9e4eedb9",
+  "lastOpenFiles": [
+    "Assault.md",
+    "Game Design/Squads/Infantry Squads.md",
+    "Images/Pasted image 20261109140326.png",
+    "Images",
+    "Images/Pasted image 20261109162745.png",
+    "Images/Pasted image 20261109162520.png",
+    "Images/Pasted image 20261109162515.png",
+    "Images/Pasted image 20261109162157.png",
+    "Images/Pasted image 20261109162153.png",
+    "Images/Pasted image 20261109162005.png",
+    "Images/Pasted image 20261109161715.png",
+    "Game Design/Squads/Armor Squad.md",
+    "Images/Pasted image 20261109161344.png",
+    "Images/Pasted image 20261109160958.png",
+    "Game Design/Squads/Untitled.canvas",
+    "Game Design/Squads/Untitled.base",
+    "Welcome.md",
+    "Game Design/Squads",
+    "Templates",
+    "AI Agent Documentation",
+    "Development Journal",
+    "Prototypes & Milestones",
+    "Asset Library",
+    "World & Level Design",
+    "Art Direction"
+  ]
+}
