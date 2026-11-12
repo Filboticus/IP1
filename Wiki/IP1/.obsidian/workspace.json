@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Game Design/Squads/Infantry Squads.md",
+                "file": "Automatic Rifleman.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Infantry Squads"
+              "title": "Automatic Rifleman"
             }
           }
         ]
@@ -187,8 +187,17 @@
   },
   "active": "d8404dee9e4eedb9",
   "lastOpenFiles": [
-    "Assault.md",
+    "Engineer.md",
     "Game Design/Squads/Infantry Squads.md",
+    "Anti-Tank.md",
+    "Machine Gunner.md",
+    "Support.md",
+    "Medic.md",
+    "Automatic Rifleman.md",
+    "Squad Leader.md",
+    "Rifleman.md",
+    "Assault.md",
+    "Game Design/Squads/Armor Squad.md",
     "Images/Pasted image 20261109140326.png",
     "Images",
     "Images/Pasted image 20261109162745.png",
@@ -198,7 +207,6 @@
     "Images/Pasted image 20261109162153.png",
     "Images/Pasted image 20261109162005.png",
     "Images/Pasted image 20261109161715.png",
-    "Game Design/Squads/Armor Squad.md",
     "Images/Pasted image 20261109161344.png",
     "Images/Pasted image 20261109160958.png",
     "Game Design/Squads/Untitled.canvas",
