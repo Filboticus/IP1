@@ -8,6 +8,7 @@
 #include "IP1PlayerController.generated.h"
 
 class UInputMappingContext;
+class UIP1DeploymentWidget;
 
 /**
  * 
@@ -19,17 +20,19 @@ class IP1_API AIP1PlayerController : public APlayerController
 
 	AIP1PlayerController();
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	UPROPERTY(EditDefaultsOnly, Category = "UI|HUD")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	UPROPERTY(EditDefaultsOnly, Category = "UI|Team Selection")
 	TSubclassOf<UUserWidget> TeamSelectionWidgetClass;
-
+	
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HUDWidget;
 	
 	UPROPERTY()
 	TObjectPtr<UUserWidget> TeamSelectionWidget;
+	
+	
 
 protected:
 	
@@ -43,6 +46,9 @@ public:
 	
 	UFUNCTION(Client, Reliable)
 	void Client_TeamSelectionComplete();
+	
+	UFUNCTION(Client, Reliable)
+	void Client_ShowDeploymentScreen();
 	
 	// Called by the UI when a player chooses a team.
 	UFUNCTION(Server, Reliable)
@@ -69,10 +75,30 @@ protected:
 
 	virtual void BeginPlay() override;
 	
+	UFUNCTION(BlueprintCallable, Category = "Team Selection")
 	void ShowTeamSelection();
 	
+	UFUNCTION(BlueprintCallable, Category = "Team Selection")
 	void HideTeamSelection();
-
-
 	
+	/*
+	 *** Deployment ***
+	 */
+	
+public:
+	UFUNCTION(BlueprintCallable, Category = "Deployment")
+	void ShowDeploymentScreen();
+	
+	UFUNCTION(BlueprintCallable, Category = "Deployment")
+	void HideDeploymentScreen();
+	
+	UFUNCTION(BlueprintPure, Category = "Deployment")
+	bool IsDeploymentScreenOpen() const;
+	
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "UI|Deployment")
+	TSubclassOf<UIP1DeploymentWidget> DeploymentWidgetClass;
+	
+	UPROPERTY(Transient)
+	TObjectPtr<UIP1DeploymentWidget> DeploymentWidget;
 };

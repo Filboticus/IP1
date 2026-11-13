@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "IP1SquadData.h"
+#include "IP1SquadSummary.h"
 #include "IP1/GameModes/IP1TeamTypes.h"
 #include "IP1/Player/IP1PlayerRoleTypes.h"
 #include "IP1SquadManager.generated.h"
@@ -25,7 +26,10 @@ public:
 	void Initialize(AIP1GameState* InGameState);
 
 	// Create a squad and returns its ID, or INDEX_NONE on failure.
-	int32 CreateSquad(EIP1Team TeamId, int32 MaxMembers = 5);
+	bool CreateSquad(AIP1PlayerState* CreatingPlayer);
+	
+	// Create a squad to test 
+	bool CreateTestSquad(EIP1Team Team);
 
 	// Assigns a player to an existing squad.
 	bool AssignPlayerToSquad(AIP1PlayerState* PlayerState, int32 SquadId);
@@ -42,6 +46,7 @@ public:
 		return Squads;
 	}
 	
+	
 	// Combat role
 	bool CanSelectRole(int32 SquadID, const EIP1PlayerRole RequestedRole, AIP1PlayerState* RequestingPlayer) const;
 	
@@ -49,6 +54,13 @@ public:
 	
 	int32 CountPlayerWithRole(int32 SquadID, AIP1PlayerState* PlayerState, EIP1PlayerRole RequestedRole, const AIP1PlayerState* ExcludedPlayer = nullptr) const;
 
+	TArray<FIP1SquadSummary> BuildSquadSummaries() const;
+
+	void RefreshSquadSummaries();
+	
+	UFUNCTION(BlueprintPure, Category = "Squads")
+	static FText GetSquadNameText(EIP1SquadName SquadName);
+	
 private:
 	UPROPERTY()
 	TObjectPtr<AIP1GameState> OwningGameState = nullptr;
@@ -62,7 +74,7 @@ private:
 	int32 FindSquadIndexById(int32 SquadID) const;
 
 	void RemovePlayerFromSquadInternal(AIP1PlayerState* PlayerState);
-
-	// Copies authoritative data to GameState for replication.
-	void PublishSquads();
+	
+	// Find the next available squad name.
+	EIP1SquadName FindNextAvailableSquadName(EIP1Team Team) const;
 };

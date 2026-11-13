@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "IP1MatchTypes.h"
+#include "IP1/Squad/IP1SquadSummary.h"
 #include "IP1/Squad/IP1SquadData.h"
 #include "IP1GameState.generated.h"
 
@@ -13,6 +14,8 @@ class UIP1SquadManager;
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FIP1OnSquadSummariesChanged);
 
 UCLASS()
 class IP1_API AIP1GameState : public AGameState
@@ -49,20 +52,38 @@ public:
 	FString GetMatchPhaseString() const;
 
 	// The squad manager is owned by this GameState.
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Squad")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Squads")
 	TObjectPtr<UIP1SquadManager> SquadManager;
 
-	UFUNCTION(BlueprintPure, Category = "Squad")
+	UFUNCTION(BlueprintPure, Category = "Squads")
 	UIP1SquadManager* GetSquadManager() const;
 
 	// Replicated snapshot of the authoritative squad roster.
-	UPROPERTY(ReplicatedUsing = OnRep_ReplicatedSquads, BlueprintReadOnly, Category = "Squad")
+	UPROPERTY(ReplicatedUsing = OnRep_ReplicatedSquads, BlueprintReadOnly, Category = "Squads")
 	TArray<FIP1SquadData> ReplicatedSquads;
 
 	// Called by the manager to publish authoritative squad data.
 	void UpdateReplicatedSquads(const TArray<FIP1SquadData>& NewSquads);
+	
+	UPROPERTY(BlueprintAssignable, Category = "Squads")
+	FIP1OnSquadSummariesChanged OnSquadSummariesChanged;
+	
+	UFUNCTION(BlueprintPure, Category="Squads")
+	const TArray<FIP1SquadSummary>& GetSquadSummaries() const;
+	
+	// Server only. Called after authoritative
+	// squad data changes.
+	void PublishSquadSummaries(
+	   const TArray<FIP1SquadSummary>& NewSummaries);
+	
 
 protected:
+	UPROPERTY(ReplicatedUsing = OnRep_SquadSummaries)
+	TArray<FIP1SquadSummary> SquadSummaries;
+	
+	UFUNCTION()
+	void OnRep_SquadSummaries();
+	
 	UFUNCTION()
 	void OnRep_MatchPhase();
 

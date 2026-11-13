@@ -4,6 +4,7 @@
 #include "IP1SquadManager.h"
 
 #include "IP1SquadData.h"
+#include "UObject/UnrealType.h"
 #include "AssetRegistry/AssetDataTagMapSerializationDetails.h"
 #include "IP1/GameModes/IP1GameState.h"
 #include "IP1/Player/IP1PlayerState.h"
@@ -14,34 +15,90 @@ void UIP1SquadManager::Initialize(AIP1GameState* InGameState)
 	OwningGameState = InGameState;
 }
 
-int32 UIP1SquadManager::CreateSquad(EIP1Team TeamId, int32 MaxMembers)
+bool UIP1SquadManager::CreateSquad(AIP1PlayerState* CreatingPlayer)
 {
-	// The important detail is that the manager checks the authority of its owning GameState.
-	// A UObject doesn't have the same actor-level authority API as an AActor,
-	// so it should not try to use its own HasAuthority().
-
-	if (!IsValid(OwningGameState) || !OwningGameState->HasAuthority())
+	if (!IsValid(CreatingPlayer))
 	{
-		return INDEX_NONE;
+		return false;
 	}
 
-	if (MaxMembers <= 0)
+	const EIP1Team Team = CreatingPlayer->GetTeam();
+
+	if (Team == EIP1Team::None)
 	{
-		return INDEX_NONE;	
+		return false;
+	}
+
+	// Find the next available squad name.
+	const EIP1SquadName NewSquadName =
+		FindNextAvailableSquadName(Team);
+
+	if (NewSquadName == EIP1SquadName::None)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("CreateSquad FAILED: No available squad names."));
+
+		return false;
+	}
+
+	// Create squad data.
+	FIP1SquadData NewSquad;
+
+	NewSquad.SquadId = NextSquadId++;
+	NewSquad.TeamId = Team;
+	NewSquad.SquadName = NewSquadName;
+	NewSquad.SquadLeader = CreatingPlayer;
+	NewSquad.Members.Add(CreatingPlayer);
+
+	// Add squad to the manager.
+	Squads.Add(NewSquad);
+
+	// Update player membership.
+	CreatingPlayer->SetSquadId(NewSquad.SquadId);
+
+	UE_LOG(LogTemp, Log,
+		TEXT("Created Squad | ID=%d | Name=%d | Team=%d"),
+		NewSquad.SquadId,
+		static_cast<int32>(NewSquad.SquadName),
+		static_cast<int32>(Team));
+
+	return true;
+}
+
+bool UIP1SquadManager::CreateTestSquad(EIP1Team Team)
+{
+	if (Team == EIP1Team::None)
+	{
+		return false;
+	}
+
+	const EIP1SquadName NewSquadName =
+		FindNextAvailableSquadName(Team);
+
+	if (NewSquadName == EIP1SquadName::None)
+	{
+		return false;
 	}
 
 	FIP1SquadData NewSquad;
+
 	NewSquad.SquadId = NextSquadId++;
-	NewSquad.TeamId = TeamId;
-	NewSquad.MaxMembers = MaxMembers;
+	NewSquad.TeamId = Team;
+	NewSquad.SquadName = NewSquadName;
 
-	const int32 NewSquadId = NewSquad.SquadId;
+	// Test squads start empty.
+	NewSquad.SquadLeader = nullptr;
+	NewSquad.Members.Empty();
 
-	Squads.Add(MoveTemp(NewSquad));
+	Squads.Add(NewSquad);
 
-	PublishSquads();
+	UE_LOG(LogTemp, Warning,
+		TEXT("Created TEST Squad | ID=%d | Name=%s| Team=%s"),
+		NewSquad.SquadId,
+		*StaticEnum<EIP1SquadName>()->GetNameStringByValue(static_cast<int64>(NewSquad.SquadName)),
+		*StaticEnum<EIP1Team>()->GetNameStringByValue(static_cast<int64>(Team)));
 
-	return NewSquadId;
+	return true;
 }
 
 bool UIP1SquadManager::AssignPlayerToSquad(AIP1PlayerState* PlayerState, int32 SquadId)
@@ -88,7 +145,7 @@ bool UIP1SquadManager::AssignPlayerToSquad(AIP1PlayerState* PlayerState, int32 S
 		TargetSquad.SquadLeader = PlayerState;
 	}
 
-	PublishSquads();
+	RefreshSquadSummaries();
 
 	return true;
 }
@@ -104,7 +161,7 @@ bool UIP1SquadManager::RemovePlayerFromSquad(AIP1PlayerState* PlayerState)
 
 	RemovePlayerFromSquadInternal(PlayerState);
 
-	PublishSquads();
+	RefreshSquadSummaries();
 
 	return true;
 }
@@ -238,6 +295,100 @@ int32 UIP1SquadManager::CountPlayerWithRole(int32 SquadID, AIP1PlayerState* Play
 	return Count;
 }
 
+TArray<FIP1SquadSummary> UIP1SquadManager::BuildSquadSummaries() const
+{
+	TArray<FIP1SquadSummary> Result;
+
+	Result.Reserve(Squads.Num());
+
+	for (const FIP1SquadData& Squad : Squads)
+	{
+		FIP1SquadSummary Summary;
+
+		Summary.SquadId = Squad.SquadId;
+		Summary.SquadName = Squad.SquadName;
+		Summary.SquadType = Squad.SquadType;
+		Summary.TeamId = Squad.TeamId;
+
+		Summary.MemberCount = Squad.Members.Num();
+		Summary.MaxMembers = Squad.MaxMembers;
+		Summary.bIsLocked = Squad.bIsLocked;
+
+		Result.Add(Summary);
+	}
+
+	Result.Sort(
+		[](const FIP1SquadSummary& A,
+		   const FIP1SquadSummary& B)
+		{
+			if (A.TeamId != B.TeamId)
+			{
+				return static_cast<uint8>(A.TeamId) <
+					   static_cast<uint8>(B.TeamId);
+			}
+
+			return A.SquadId < B.SquadId;
+		});
+
+	return Result;
+}
+
+void UIP1SquadManager::RefreshSquadSummaries()
+{
+	// Get the GameState that owns this SquadManager.
+	AIP1GameState* GS = OwningGameState;
+
+	if (!IsValid(GS))
+	{
+		UE_LOG(
+			LogTemp,
+			Error,
+			TEXT("RefreshSquadSummaries: "
+				 "GameState not found."));
+
+		return;
+	}
+
+	// Only the server can publish squad summaries.
+	if (!GS->HasAuthority())
+	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("RefreshSquadSummaries: "
+				 "Called without server authority."));
+
+		return;
+	}
+
+	// Convert authoritative squad data into
+	// lightweight summaries.
+	const TArray<FIP1SquadSummary> NewSummaries =
+		BuildSquadSummaries();
+
+	// Update the replicated array in GameState.
+	GS->PublishSquadSummaries(NewSummaries);
+
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("RefreshSquadSummaries: "
+			 "Published %d squad summaries."),
+		NewSummaries.Num());
+}
+
+FText UIP1SquadManager::GetSquadNameText(EIP1SquadName SquadName)
+{
+	const UEnum* SquadNameEnum = StaticEnum<EIP1SquadName>();
+	
+	if (!SquadNameEnum)
+	{
+		return FText::GetEmpty();
+	}
+	
+	return SquadNameEnum->GetDisplayNameTextByValue(static_cast<int64>(SquadName));
+}
+
 int32 UIP1SquadManager::FindSquadIndexById(int32 SquadID) const
 {
 	return Squads.IndexOfByPredicate(
@@ -272,23 +423,55 @@ void UIP1SquadManager::RemovePlayerFromSquadInternal(AIP1PlayerState* PlayerStat
 			? Squad.Members[0]
 			: nullptr;
 	}
+	
+	// Clear the player's squad membership.
+	PlayerState->SetSquadId(INDEX_NONE);
 }
 
-void UIP1SquadManager::PublishSquads()
+EIP1SquadName UIP1SquadManager::FindNextAvailableSquadName(EIP1Team Team) const
 {
-	if (!IsValid(OwningGameState) ||
-		!OwningGameState->HasAuthority())
+	if (Team == EIP1Team::None)
 	{
-		return;
+		return EIP1SquadName::None;
 	}
-
-	// OwningGameState->UpdateReplicatedSquads(Squads);
-
-	// ToDo:
-	// We'll implement UpdateReplicatedSquads() in GameState next.
-	// The manager's Squads array is the authoritative working data.
-	// GameState receives a copy to replicate. All squad membership
-	// changes should go through the manager's API rather than directly
-	// editing either array.
+	
+	// Iterate through every valid squad name.
+	// Able = 1, Baker = 2, etc.
+	
+	const uint8 FirstName = static_cast<uint8>(EIP1SquadName::Able);
+	
+	const uint8 LastName = static_cast<uint8>(EIP1SquadName::Zebra);
+	
+	for (uint8 NameIndex = FirstName; NameIndex <= LastName; ++NameIndex)
+	{
+		const EIP1SquadName CandidateName = static_cast<EIP1SquadName>(NameIndex);
+		
+		bool bNameInUse = false;
+		
+		// Check existing squads.
+		for (const FIP1SquadData& Squad : Squads)
+		{
+			// Only compare squads on the same team.
+			if (Squad.TeamId != Team)
+			{
+				continue;
+			}
+			
+			if (Squad.SquadName == CandidateName)
+			{
+				bNameInUse = true;
+				break;
+			}
+		}
+		
+		// Return the first unsued name.
+		if (!bNameInUse)
+		{
+			return CandidateName;
+		}
+	}
+	
+	// All avaialable names are already assigned.
+	return EIP1SquadName::None;
 }
 

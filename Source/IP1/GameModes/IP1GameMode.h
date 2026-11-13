@@ -136,5 +136,8 @@ public:
 	 */
 	 
 	void HandleRoleSelection(AIP1PlayerController* PlayerController, EIP1PlayerRole RequestedRole);
+	
+private:
+	//bool IsPlayerInValidSquad(const AIP1PlayerState* PlayerState) const;
 	 
 };

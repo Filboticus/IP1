@@ -4,7 +4,7 @@
 #include "IP1PlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
-#include "GameFramework/GameModeBase.h"
+#include "IP1/UI/IP1DeploymentWidget.h"
 #include "IP1/GameModes/IP1GameMode.h"
 #include "IP1PlayerState.h"
 
@@ -69,13 +69,18 @@ void AIP1PlayerController::Server_RequestTeamSelection_Implementation(EIP1Team T
 
 void AIP1PlayerController::Client_TeamSelectionComplete_Implementation()
 {
-	UE_LOG(
-		LogTemp,
-		Warning,
-		TEXT("Team selection completed. Closing UI.")
-	);
+	UE_LOG(LogTemp, Warning, TEXT("Team selection completed. Closing UI."));
 
+	// Close the existing team selection UI.
 	HideTeamSelection();
+	
+	// Open the deployment UI.
+	ShowDeploymentScreen();
+}
+
+void AIP1PlayerController::Client_ShowDeploymentScreen_Implementation()
+{
+	ShowDeploymentScreen();
 }
 
 void AIP1PlayerController::SelectAllies()
@@ -200,7 +205,7 @@ void AIP1PlayerController::HideTeamSelection()
 	}
 	
 	// Remove team selection widget. 
-	if (TeamSelectionWidget)
+	if (IsValid(TeamSelectionWidget))
 	{
 		TeamSelectionWidget->RemoveFromParent();
 		TeamSelectionWidget = nullptr;
@@ -223,4 +228,121 @@ void AIP1PlayerController::HideTeamSelection()
 		Warning,
 		TEXT("Team selection closed. Game input restored.")
 	);
+}
+
+void AIP1PlayerController::ShowDeploymentScreen()
+{
+	// UI should only be created on the owning client.
+	if (!IsLocalController())
+	{
+		return;
+	}
+	
+	// Hide the gameplay HUD
+	if (IsValid(HUDWidget))
+	{
+		HUDWidget->SetVisibility(
+			ESlateVisibility::Collapsed
+		);
+	}
+
+	if (!DeploymentWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("DeploymentWidgetClass is not assigned!"));
+		return;
+	}
+
+	// Create the widget only once.
+	if (!IsValid(DeploymentWidget))
+	{
+		DeploymentWidget =
+			CreateWidget<UIP1DeploymentWidget>(
+				this,
+				DeploymentWidgetClass
+			);
+	}
+
+	if (!IsValid(DeploymentWidget))
+	{
+		UE_LOG(LogTemp, Error,
+			TEXT("Failed to create deployment widget."));
+		return;
+	}
+
+	// Prevent adding duplicate widgets.
+	if (!DeploymentWidget->IsInViewport())
+	{
+		DeploymentWidget->AddToViewport(100);
+	}
+
+	DeploymentWidget->SetVisibility(
+		ESlateVisibility::Visible
+	);
+
+	DeploymentWidget->RefreshDeploymentUI();
+
+	// Allow mouse interaction with the UI.
+	FInputModeUIOnly InputMode;
+
+	InputMode.SetWidgetToFocus(
+		DeploymentWidget->TakeWidget()
+	);
+
+	InputMode.SetLockMouseToViewportBehavior(
+		EMouseLockMode::DoNotLock
+	);
+
+	SetInputMode(InputMode);
+
+	bShowMouseCursor = true;
+
+	UE_LOG(LogTemp, Log,
+		TEXT("Deployment screen opened."));
+	
+	UE_LOG(LogTemp, Warning,
+	TEXT("[DEPLOY] Widget=%s | InViewport=%d | Visibility=%d | Local=%d"),
+	*GetNameSafe(DeploymentWidget),
+	IsValid(DeploymentWidget) ? DeploymentWidget->IsInViewport() : 0,
+	IsValid(DeploymentWidget) ? static_cast<int32>(DeploymentWidget->GetVisibility()) : -1,
+	IsLocalController());
+	
+	UE_LOG(LogTemp, Warning,
+	TEXT("[DEPLOY] WidgetClass=%s"),
+	*GetNameSafe(DeploymentWidgetClass.Get()));
+}
+
+void AIP1PlayerController::HideDeploymentScreen()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	
+	if (IsValid(DeploymentWidget))
+	{
+		DeploymentWidget->RemoveFromParent();
+	}
+	
+	// Restore gameplay input.
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	
+	bShowMouseCursor = false;
+	
+	UE_LOG(LogTemp, Log, TEXT("Deployment screen closed."))
+	
+	// Show gameplay HUD
+	if (IsValid(HUDWidget))
+	{
+		HUDWidget->SetVisibility(
+			ESlateVisibility::Visible
+		);
+	}
+	
+}
+
+bool AIP1PlayerController::IsDeploymentScreenOpen() const
+{
+	return IsValid(DeploymentWidget) && DeploymentWidget->IsInViewport();
 }

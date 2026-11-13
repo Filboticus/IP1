@@ -23,6 +23,8 @@ void AIP1GameState::BeginPlay()
 	{
 		SquadManager->Initialize(this);
 	}
+	
+	SquadManager->RefreshSquadSummaries();
 }
 
 void AIP1GameState::SetMatchPhase(EIP1MatchPhase NewPhase)
@@ -103,6 +105,42 @@ void AIP1GameState::UpdateReplicatedSquads(const TArray<FIP1SquadData>& NewSquad
 	ForceNetUpdate();
 }
 
+const TArray<FIP1SquadSummary>& AIP1GameState::GetSquadSummaries() const
+{
+	return SquadSummaries;
+}
+
+void AIP1GameState::PublishSquadSummaries(const TArray<FIP1SquadSummary>& NewSummaries)
+{
+	if (!HasAuthority())
+	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("PublishSquadSummaries: Called without authority."));
+		return;
+	}
+
+	SquadSummaries = NewSummaries;
+
+	// Notify server-side listeners.
+	OnSquadSummariesChanged.Broadcast();
+
+	// Request prompt replication.
+	ForceNetUpdate();
+}
+
+void AIP1GameState::OnRep_SquadSummaries()
+{
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("OnRep_SquadSummaries: Received %d squads."),
+		SquadSummaries.Num());
+
+	OnSquadSummariesChanged.Broadcast();
+}
+
 void AIP1GameState::OnRep_MatchPhase()
 {
 	FString PhaseName;
@@ -148,4 +186,5 @@ void AIP1GameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AIP1GameState, MatchPhase);
 	DOREPLIFETIME(AIP1GameState, MatchEndServerTime);
 	DOREPLIFETIME(AIP1GameState, ReplicatedSquads);
+	DOREPLIFETIME(AIP1GameState, SquadSummaries);
 }

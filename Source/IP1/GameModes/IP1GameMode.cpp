@@ -59,8 +59,36 @@ void AIP1GameMode::BeginPlay()
 		return;
 	}
 
-	UE_LOG(LogTemp, Error, TEXT("GAMEMODE BEGIN PLAY: BEGIN WARMUP"));
+	UE_LOG(LogTemp, Error, TEXT("GAME-MODE BEGIN PLAY: BEGIN WARMUP"));
 	BeginWarmup();
+	
+	AIP1GameState* GS = GetGameState<AIP1GameState>();
+	
+	if (!IsValid(GS))
+	{
+		return;
+	}
+
+	UIP1SquadManager* SquadManager = GS->GetSquadManager();
+	
+	if (!IsValid(SquadManager))
+	{
+		return;
+	}
+	
+#if WITH_EDITOR
+
+	// Create three Allied test squads.
+	SquadManager->CreateTestSquad(EIP1Team::Allies);
+	SquadManager->CreateTestSquad(EIP1Team::Allies);
+	SquadManager->CreateTestSquad(EIP1Team::Allies);
+	
+	// Create 2 Axis test squads.
+	SquadManager->CreateTestSquad(EIP1Team::Axis);
+	SquadManager->CreateTestSquad(EIP1Team::Axis);
+	
+
+#endif
 }
 
 void AIP1GameMode::StartPlay()
@@ -69,7 +97,7 @@ void AIP1GameMode::StartPlay()
 
 	UE_LOG(LogTemp, Log, TEXT("IP1 GameMode Started"));
 	UE_LOG(LogTemp, Log, TEXT("Maximum Players: %d"), MaxPlayers);
-	UE_LOG(LogTemp, Log, TEXT("Maxium Players Per Team: %d"), MaxPlayersPerTeam);
+	UE_LOG(LogTemp, Log, TEXT("Maximum Players Per Team: %d"), MaxPlayersPerTeam);
 
 	UE_LOG(LogTemp, Warning, TEXT("WW2GameMode StartPlay - DefaultPawnClass: %s"), *GetNameSafe(DefaultPawnClass));
 }
@@ -270,7 +298,7 @@ void AIP1GameMode::HandlePostMatchFinished()
 
 	UE_LOG(LogTemp,
 		Log,
-		TEXT("MATCH: Post-match peroid finished."));
+		TEXT("MATCH: Post-match period finished."));
 
 	// Prototype 03: remain in PostMatch
 	// Later: restart the round or return to a lobby
@@ -528,6 +556,11 @@ void AIP1GameMode::HandleStartingNewPlayer_Implementation(APlayerController* New
 
 void AIP1GameMode::RestartPlayer(AController* NewPlayer)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
 	if (!IsValid(NewPlayer))
 	{
 		UE_LOG(LogTemp, Error,
@@ -544,6 +577,11 @@ void AIP1GameMode::RestartPlayer(AController* NewPlayer)
 			TEXT("RestartPlayer BLOCKED: PlayerState is invalid."));
 		return;
 	}
+	
+	// ----------------------------------------
+	// Requirement 1: Valid Team
+	// ----------------------------------------
+	
 	const EIP1Team Team = PS->GetTeam();
 
 	if (Team == EIP1Team::None)
@@ -553,9 +591,59 @@ void AIP1GameMode::RestartPlayer(AController* NewPlayer)
 			*PS->GetPlayerName());
 		return;
 	}
+	
+	// ToDo:
+	// Validate the player's selected Squad
+	// ----------------------------------------
+	// Requirement 2: Valid Squad
+	// ----------------------------------------
+	
+	/* if (!IsPlayerInValidSquad(PS))
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("RestartPlayer BLOCKED: %s has no valid squad."),
+			*PS->GetPlayerName());
+		return;
+	} */
+	
+	// ----------------------------------------
+	// Requirement 3: Valid Role
+	// ----------------------------------------
+	
+	const EIP1PlayerRole SelectedRole =
+		PS->GetSelectedRole();
 
+	if (SelectedRole == EIP1PlayerRole::None)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("RestartPlayer BLOCKED: %s has no selected role."),
+			*PS->GetPlayerName());
+		return;
+	}
+	
+	// ----------------------------------------
+	// Requirement 4: Valid Spawn Point
+	// ----------------------------------------
+
+	// TODO:
+	// Validate the player's selected spawn point.
+	//
+	// Example:
+	//
+	// if (!IsSpawnPointValidForPlayer(PS))
+	// {
+	//     UE_LOG(LogTemp, Warning,
+	//         TEXT("RestartPlayer BLOCKED: Invalid spawn point."));
+	//     return;
+	// }
+
+	// ----------------------------------------
+	// All requirements passed
+	// ----------------------------------------
+
+	
 	UE_LOG(LogTemp, Warning,
-		TEXT("RestartPlayer: Calling Super | Controller=%s | Team=%d | ExistingPawn=%s"),
+		TEXT("RestartPlayer: APPROVED Calling Super | Controller=%s | Team=%d | ExistingPawn=%s"),
 		*GetNameSafe(NewPlayer),
 		static_cast<uint8>(Team),
 		*GetNameSafe(NewPlayer->GetPawn()));
@@ -615,6 +703,65 @@ void AIP1GameMode::HandleRoleSelection(AIP1PlayerController* PlayerController, E
 	// Role selection was successful.
 	PS->SetSelectedRole(RequestedRole);
 }
+
+//bool AIP1GameMode::IsPlayerInValidSquad(const AIP1PlayerState* PlayerState) const
+//{
+	/* if (!IsValid(PlayerState))
+	{
+		return false;
+	}
+
+	const AIP1GameState* GS =
+		GetGameState<AIP1GameState>();
+
+	if (!IsValid(GS))
+	{
+		return false;
+	}
+
+	const UIP1SquadManager* SquadManager =
+		GS->GetSquadManager();
+
+	if (!IsValid(SquadManager))
+	{
+		return false;
+	}
+
+	const int32 SquadID =
+		PlayerState->GetSquadId();
+
+	// Assumes -1 represents no squad.
+	if (SquadID == INDEX_NONE)
+	{
+		return false;
+	}
+
+	// Implement this lookup in your squad manager,
+	// or adapt it to your existing squad data API.
+	const FIP1SquadData* Squad =
+		SquadManager->FindSquadById(SquadID);
+
+	if (!Squad)
+	{
+		return false;
+	}
+
+	// Squad must belong to the player's team.
+	if (Squad->Team != PlayerState->GetTeam())
+	{
+		return false;
+	}
+
+	// Verify actual membership, not just a matching ID.
+	// Adapt Members to your FIP1SquadData structure.
+	if (!Squad->Members.Contains(PlayerState))
+	{
+		return false;
+	}
+
+	return true;
+	*/
+//}
 
 int32 AIP1GameMode::GetTeamPlayerCount(EIP1Team Team) const
 {
