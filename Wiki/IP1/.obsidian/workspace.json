@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Game Design/Squads/Armor Squad.md",
+                "file": "Game Design/Squads/Infantry Squads.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Armor Squad"
+              "title": "Infantry Squads"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Game Design/Squads/Armor Squad.md",
+                "file": "Game Design/Roles/Anti-Tank.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Game Design/Squads/Armor Squad.md",
+                "file": "Game Design/Roles/Anti-Tank.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Game Design/Squads/Armor Squad.md",
+                "file": "Game Design/Roles/Anti-Tank.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -191,9 +191,9 @@
   "active": "d8404dee9e4eedb9",
   "lastOpenFiles": [
     "Game Design/Roles/Anti-Tank.md",
+    "Game Design/Squads/Armor Squad.md",
     "Untitled.canvas",
     "Game Design/Squads/Infantry Squads.md",
-    "Game Design/Squads/Armor Squad.md",
     "Game Design/Roles/Engineer.md",
     "Game Design/Roles",
     "Game Design/Roles/Support.md",
