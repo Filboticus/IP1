@@ -55,6 +55,9 @@ bool UIP1SquadManager::CreateSquad(AIP1PlayerState* CreatingPlayer)
 
 	// Update player membership.
 	CreatingPlayer->SetSquadId(NewSquad.SquadId);
+	
+	// Publish updated squad list.
+	RefreshSquadSummaries();
 
 	UE_LOG(LogTemp, Log,
 		TEXT("Created Squad | ID=%d | Name=%d | Team=%d"),
@@ -91,6 +94,9 @@ bool UIP1SquadManager::CreateTestSquad(EIP1Team Team)
 	NewSquad.Members.Empty();
 
 	Squads.Add(NewSquad);
+	
+	// Publish updated squad list.
+	RefreshSquadSummaries();
 
 	UE_LOG(LogTemp, Warning,
 		TEXT("Created TEST Squad | ID=%d | Name=%s| Team=%s"),
