@@ -130,10 +130,9 @@ protected:
 private:
 	void RefreshTeamMarkerBinding();
 
+	UFUNCTION()
 	void UpdateTeamMarker(EIP1Team NewTeam);
 
 	UPROPERTY()
-	TObjectPtr<AIP1PlayerState> BoundPlayerState;
-
-	FDelegateHandle TeamChangedHandle;
+	TObjectPtr<AIP1PlayerState> BoundPlayerState = nullptr;
 };

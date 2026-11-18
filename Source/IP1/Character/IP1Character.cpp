@@ -279,55 +279,48 @@ void AIP1Character::OnRep_PlayerState()
 
 void AIP1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (BoundPlayerState && TeamChangedHandle.IsValid())
+	if (IsValid(BoundPlayerState))
 	{
-		BoundPlayerState->OnTeamChanged.Remove(TeamChangedHandle);
+		BoundPlayerState->OnTeamChanged.RemoveDynamic(this, &AIP1Character::UpdateTeamMarker);
+		
+		BoundPlayerState = nullptr;
 	}
-
-	BoundPlayerState = nullptr;
-	TeamChangedHandle.Reset();
 	
 	Super::EndPlay(EndPlayReason);
 }
 
 void AIP1Character::RefreshTeamMarkerBinding()
 {
-	AIP1PlayerState* CurrentPlayerState = GetPlayerState<AIP1PlayerState>();
+	AIP1PlayerState* NewPlayerState = GetPlayerState<AIP1PlayerState>();
 
-	UE_LOG(LogTemp, Warning,
-		TEXT("REFRESH TEAM MARKER | Character: %s | PlayerState: %s"),
-		*GetName(),
-		*GetNameSafe(CurrentPlayerState));
-
-	if (!CurrentPlayerState)
+	if (!NewPlayerState)
 	{
 		return;
 	}
-
-	UE_LOG(LogTemp, Warning,
-		TEXT("TEAM MARKER TEAM | Character: %s | Team: %d"),
-		*GetName(),
-		static_cast<int32>(CurrentPlayerState->GetTeam()));
 	
-	// Avoid binding to the same PlayerState more than once.
-	if (BoundPlayerState != CurrentPlayerState)
+	// Unbind from the previous PlayerState.
+	if (IsValid(BoundPlayerState))
 	{
-		if (BoundPlayerState && TeamChangedHandle.IsValid())
-		{
-			BoundPlayerState->OnTeamChanged.Remove(TeamChangedHandle);
-		}
-	
-
-		BoundPlayerState = CurrentPlayerState;
-
-		TeamChangedHandle = BoundPlayerState->OnTeamChanged.AddUObject(
-			this,
-			&AIP1Character::UpdateTeamMarker);
+		BoundPlayerState->OnTeamChanged.RemoveDynamic(this, &AIP1Character::UpdateTeamMarker);
 	}
+	
+		BoundPlayerState = NewPlayerState;
 
-	// Always apply the current value, even if the event
-	// fired before the character finished initializing.
-	UpdateTeamMarker(BoundPlayerState->GetTeam());
+	// Bind to the current PlayerState.
+	if (IsValid(BoundPlayerState))
+	{
+		BoundPlayerState->OnTeamChanged.AddUniqueDynamic(
+			this,
+			&AIP1Character::UpdateTeamMarker
+		);
+
+		// Initialize the marker immediately.
+		UpdateTeamMarker(BoundPlayerState->GetTeam());
+	}
+	else
+	{
+		UpdateTeamMarker(EIP1Team::None);
+	}
 }
 
 void AIP1Character::UpdateTeamMarker(EIP1Team NewTeam)

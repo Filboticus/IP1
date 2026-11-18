@@ -68,14 +68,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Squads")
 	FIP1OnSquadSummariesChanged OnSquadSummariesChanged;
 	
-	UFUNCTION(BlueprintPure, Category="Squads")
-	const TArray<FIP1SquadSummary>& GetSquadSummaries() const;
+	// Read-only access for the deployment UI.
+	UFUNCTION(BlueprintPure, Category = "Squads")
+	TArray<FIP1SquadSummary> GetSquadSummaries() const;
 	
-	// Server only. Called after authoritative
-	// squad data changes.
-	void PublishSquadSummaries(
-	   const TArray<FIP1SquadSummary>& NewSummaries);
-	
+	// Server publishes the latest squad summaries.
+	void PublishSquadSummaries(const TArray<FIP1SquadSummary>& NewSummaries);
 
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_SquadSummaries)

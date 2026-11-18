@@ -55,6 +55,8 @@ void AIP1PlayerState::SetTeam(EIP1Team NewTeam)
 	// The server doesn't automatically execute OnRep_Team
 	// when it changes the value itself.
 	OnRep_Team();
+	
+	ForceNetUpdate();
 }
 
 void AIP1PlayerState::SetSelectedRole(EIP1PlayerRole NewSelectedRole)
@@ -154,16 +156,6 @@ void AIP1PlayerState::OnRep_Team()
   );
 	
 	OnTeamChanged.Broadcast(Team);
-	
-	// Later, you can notify UI or other systems when
-	// this player's team changes.
-
-	// The replicated Team value has changed on this client.
-	// Notify the overhead marker through the owning character.
-	if (APawn* MyPawn = GetPawn())
-	{
-		
-	}
 }
 
 void AIP1PlayerState::OnRep_SquadId()

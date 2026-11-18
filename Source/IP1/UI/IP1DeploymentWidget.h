@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "IP1DeploymentWidget.generated.h"
 
+class AIP1GameState;
 /**
  * 
  */
@@ -22,4 +23,16 @@ public:
 protected:
 	
 	virtual void NativeConstruct() override;
+	
+	virtual void NativeDestruct() override;
+	
+	UFUNCTION()
+	void HandleSquadSummariesChanged();
+
+	UFUNCTION(BlueprintImplementableEvent,
+		Category = "Deployment|Squads")
+	void BP_RefreshSquadList();
+
+	UPROPERTY()
+	TObjectPtr<AIP1GameState> CachedGameState;
 };

@@ -105,7 +105,7 @@ void AIP1GameState::UpdateReplicatedSquads(const TArray<FIP1SquadData>& NewSquad
 	ForceNetUpdate();
 }
 
-const TArray<FIP1SquadSummary>& AIP1GameState::GetSquadSummaries() const
+TArray<FIP1SquadSummary> AIP1GameState::GetSquadSummaries() const
 {
 	return SquadSummaries;
 }

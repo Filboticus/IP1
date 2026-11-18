@@ -40,12 +40,11 @@ public:
 	// Retrieves a copy of the squad data.
 	bool GetSquadById(int32 SquadId, FIP1SquadData& OutSquad) const;
 
-	//Returns the squad roster for server-side insepction.
+	//Returns the squad roster for server-side inspection.
 	const TArray<FIP1SquadData>& GetSquads() const
 	{
 		return Squads;
 	}
-	
 	
 	// Combat role
 	bool CanSelectRole(int32 SquadID, const EIP1PlayerRole RequestedRole, AIP1PlayerState* RequestingPlayer) const;

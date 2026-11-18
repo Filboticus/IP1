@@ -14,7 +14,7 @@
  *	Base player state class used by this project.
  */
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnIP1TeamChanged, EIP1Team);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIP1OnTeamChanged, EIP1Team, NewTeam);
 
 UCLASS()
 class IP1_API AIP1PlayerState : public APlayerState
@@ -85,7 +85,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player|Stats")
 	void AddDeath();
 
-	FOnIP1TeamChanged OnTeamChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Player|Team")
+	FIP1OnTeamChanged OnTeamChanged;
 
 protected:
 	
