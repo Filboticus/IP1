@@ -2,4 +2,5 @@
 	<s:Boolean x:Key="/Default/CppUnrealEngine/EnableBlueprintClassHighlightings/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CppUnrealEngine/EnableBlueprintFunctionHighlightings/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CppUnrealEngine/EnableBlueprintPropertyHighlightings/@EntryValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/CppUnrealEngine/EnableBlueprintsSupport/@EntryValue">True</s:Boolean></wpf:ResourceDictionary>
+	<s:Boolean x:Key="/Default/CppUnrealEngine/EnableBlueprintsSupport/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/Environment/Hierarchy/Build/SolBuilderDuo/CustomGlobalProperties/=MSBuildEnableWorkloadResolver/@EntryIndexedValue">False</s:String></wpf:ResourceDictionary>
