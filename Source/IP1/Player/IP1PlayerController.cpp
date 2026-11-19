@@ -120,6 +120,60 @@ void AIP1PlayerController::ClientRoleSelectionRejected_Implementation()
 	// Show an error in the selection UI.
 }
 
+void AIP1PlayerController::RequestJoinSquad(int32 SquadID)
+{
+	if (SquadID == INDEX_NONE)
+	{
+		return;
+	}
+	
+	if (HasAuthority())
+	{
+		ServerRequestJoinSquad_Implementation(SquadID);
+	}
+	else
+	{
+		ServerRequestJoinSquad(SquadID);
+	}
+}
+
+void AIP1PlayerController::RequestCreateSquad()
+{
+	if (IsLocalController())
+	{
+		ServerRequestCreateSquad();
+	}
+}
+
+void AIP1PlayerController::ServerRequestCreateSquad_Implementation()
+{
+	AIP1GameMode* GM = GetWorld()->GetAuthGameMode<AIP1GameMode>();
+	
+	if (!IsValid(GM))
+	{
+		return;
+	}
+	
+	GM->HandleCreateSquad(this);
+}
+
+void AIP1PlayerController::ServerRequestJoinSquad_Implementation(int32 SquadID)
+{
+	if (SquadID == INDEX_NONE)
+	{
+		return;
+	}
+	
+	AIP1GameMode* GM = GetWorld() ?GetWorld()->GetAuthGameMode<AIP1GameMode>() : nullptr;
+	
+	if (!IsValid(GM))
+	{
+		return;
+	}
+	
+	GM->HandleJoinSquad(this, SquadID);
+}
+
 void AIP1PlayerController::BeginPlay()
 {
 	Super::BeginPlay();

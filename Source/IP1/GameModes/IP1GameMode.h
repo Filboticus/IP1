@@ -118,6 +118,14 @@ public:
 
 	FTimerHandle RespawnTimerHandle;
  
+	/**
+	 * Squad
+	 */
+	
+	void HandleJoinSquad(AIP1PlayerController* PlayerController, int32 SquadID);
+	
+	void HandleCreateSquad(AIP1PlayerController* PlayerController);
+	
 	// Respawning
 	float RespawnDelay = 5.0f;
 
@@ -136,6 +144,7 @@ public:
 	 */
 	 
 	void HandleRoleSelection(AIP1PlayerController* PlayerController, EIP1PlayerRole RequestedRole);
+	
 	
 private:
 	//bool IsPlayerInValidSquad(const AIP1PlayerState* PlayerState) const;

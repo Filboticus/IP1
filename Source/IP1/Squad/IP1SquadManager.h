@@ -60,6 +60,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Squads")
 	static FText GetSquadNameText(EIP1SquadName SquadName);
 	
+	
 private:
 	UPROPERTY()
 	TObjectPtr<AIP1GameState> OwningGameState = nullptr;

@@ -70,6 +70,18 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientRoleSelectionRejected();
 	
+	// Squad
+	UFUNCTION(BlueprintCallable, Category = "Squad")
+	void RequestJoinSquad(int32 SquadID);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRequestJoinSquad(int32 SquadID);
+	
+	UFUNCTION(BlueprintCallable, Category = "Squad")
+	void RequestCreateSquad();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRequestCreateSquad();
 
 protected:
 

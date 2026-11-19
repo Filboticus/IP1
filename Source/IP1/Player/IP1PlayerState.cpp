@@ -21,8 +21,8 @@ void AIP1PlayerState::BeginPlay()
 	// This is just for testing and should be removed once the squad manager is setup.
 	if (HasAuthority())
 	{
-		SetSquadId(1);
-		SetIsSquadLeader(true);
+		//SetSquadId(1);
+		//SetIsSquadLeader(true);
 	}
 
 	UE_LOG(
@@ -149,7 +149,7 @@ void AIP1PlayerState::OnRep_Team()
 	UE_LOG(
 	  LogTemp,
 	  Warning,
-	  TEXT("TEAM REPLICATION | PlayerState: %s | Team: %d | Pawn: %s"),
+	  TEXT("CLIENT: OnRep_Team | PlayerState: %s | Team: %d | Pawn: %s"),
 	  *GetName(),
 	  static_cast<int32>(Team),
 	  *GetNameSafe(GetPawn())

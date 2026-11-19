@@ -491,7 +491,7 @@ void AIP1GameMode::UpdateTeamCounts()
 
 void AIP1GameMode::HandleTeamSelection(AIP1PlayerController* PlayerController, EIP1Team RequestedTeamID)
 {
-	if (!HasAuthority() || !PlayerController)
+	if (!HasAuthority() || !IsValid(PlayerController))
 	{
 		return;
 	}
@@ -499,7 +499,7 @@ void AIP1GameMode::HandleTeamSelection(AIP1PlayerController* PlayerController, E
 	AIP1PlayerState* PS =
 		PlayerController->GetPlayerState<AIP1PlayerState>();
 
-	if (!PS)
+	if (!IsValid(PS))
 	{
 		return;
 	}
@@ -533,12 +533,13 @@ void AIP1GameMode::HandleTeamSelection(AIP1PlayerController* PlayerController, E
 	UpdateTeamCounts();
 
 	UE_LOG(LogTemp, Warning,
-		TEXT("TEAM SELECTION ACCEPTED: %s | Team: %s"),
+		TEXT("SERVER: %s assigned to team %d"),
 		*PS->GetPlayerName(),
-		*UEnum::GetValueAsString(RequestedTeamID));
+		static_cast<int32>(PS->GetTeam()));
 	
 	// Spawn the player now that they have a valid team.
-	RestartPlayer(PlayerController);
+	// ToDo: Move Spawning to somewhere else.
+	//RestartPlayer(PlayerController);
 
 	// Notify the owning client that team selection is complete.
 	// Close selection UI. 
@@ -777,6 +778,115 @@ int32 AIP1GameMode::GetTeamPlayerCount(EIP1Team Team) const
 		return 0;
 	}
 }
+
+void AIP1GameMode::HandleJoinSquad(AIP1PlayerController* PlayerController, int32 SquadID)
+{
+	if (!HasAuthority() || !IsValid(PlayerController))
+	{
+		return;
+	}
+
+	AIP1PlayerState* PS =
+		PlayerController->GetPlayerState<AIP1PlayerState>();
+
+	if (!IsValid(PS))
+	{
+		return;
+	}
+
+	if (PS->GetTeam() == EIP1Team::None)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("HandleJoinSquad: Player has no team."));
+		return;
+	}
+
+	AIP1GameState* GS = GetGameState<AIP1GameState>();
+
+	if (!IsValid(GS))
+	{
+		return;
+	}
+
+	UIP1SquadManager* SquadManager = GS->GetSquadManager();
+
+	if (!IsValid(SquadManager))
+	{
+		return;
+	}
+	
+	const bool bJoined =
+		SquadManager->AssignPlayerToSquad(PS, SquadID);
+
+	if (!bJoined)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("JoinSquad FAILED | Player=%s | SquadID=%d"),
+			*PS->GetPlayerName(),
+			SquadID);
+
+		return;
+	}
+
+	UE_LOG(LogTemp, Log,
+		TEXT("JoinSquad SUCCESS | Player=%s | SquadID=%d"),
+		*PS->GetPlayerName(),
+		SquadID);
+}
+
+void AIP1GameMode::HandleCreateSquad(AIP1PlayerController* PlayerController)
+{
+	if (!HasAuthority() || !IsValid(PlayerController))
+	{
+		return;
+	}
+	
+	AIP1PlayerState* PS = PlayerController->GetPlayerState<AIP1PlayerState>();
+	
+	if (!IsValid(PS))
+	{
+		return;
+	}
+	
+	// Player must select a team first.
+	if (PS->GetTeam() == EIP1Team::None)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleCreateSquad: Player has no team."));
+		return;
+	}
+	
+	// Prevent creating another squad while already in one.
+	if (PS->GetSquadId() != INDEX_NONE)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleCreateSquad: Player already in squad %d."), PS->GetSquadId());
+		return;
+	}
+	
+	AIP1GameState* GS = GetGameState<AIP1GameState>();
+	
+	if (!IsValid(GS))
+	{
+		return;
+	}
+	
+	UIP1SquadManager* SquadManager = GS->GetSquadManager();
+	
+	if (!IsValid(SquadManager))
+	{
+		return;
+	}
+	
+	// Create the squad on the server.
+	const bool bCreated = SquadManager->CreateSquad(PS);
+	
+	if (!bCreated)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleCreateSquad FAILED | Player: %s"), *PS->GetPlayerName());
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("HandleCreateSquad SUCCESS | Player: %s"), *PS->GetPlayerName())
+}
+
 
 void AIP1GameMode::ScheduleRespawn(AController* Controller)
 {

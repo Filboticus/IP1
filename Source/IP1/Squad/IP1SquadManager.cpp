@@ -110,8 +110,8 @@ bool UIP1SquadManager::CreateTestSquad(EIP1Team Team)
 bool UIP1SquadManager::AssignPlayerToSquad(AIP1PlayerState* PlayerState, int32 SquadId)
 {
 	if (!IsValid(OwningGameState) ||
-	!OwningGameState->HasAuthority() ||
-	!IsValid(PlayerState))
+		!OwningGameState->HasAuthority() ||
+		!IsValid(PlayerState))
 	{
 		return false;
 	}
@@ -123,35 +123,53 @@ bool UIP1SquadManager::AssignPlayerToSquad(AIP1PlayerState* PlayerState, int32 S
 		return false;
 	}
 
-	// Assignment to the same squad is already satisfied.
-	if (PlayerState->GetSquadId() == SquadId)
-	{
-		return true;
-	}
-
 	FIP1SquadData& TargetSquad = Squads[SquadIndex];
 
-	// Do not remove a player from their current squad
-	// unless the new squad can accept them.
+	// Validate that the player belongs to the squad's team.
+	if (PlayerState->GetTeam() == EIP1Team::None ||
+		PlayerState->GetTeam() != TargetSquad.TeamId)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("AssignPlayerToSquad FAILED: Team mismatch."));
+
+		return false;
+	}
+
+	// Already assigned to this squad.
+	if (PlayerState->GetSquadId() == SquadId)
+	{
+		return TargetSquad.Members.Contains(PlayerState);
+	}
+
+	// Validate capacity before removing previous membership.
 	if (TargetSquad.Members.Num() >= TargetSquad.MaxMembers)
 	{
 		return false;
 	}
 
-	// Remove the previous assignment, if any.
+	// Remove previous squad membership.
 	RemovePlayerFromSquadInternal(PlayerState);
 
-	// Add the new assignment.
+	// Add to new squad.
 	TargetSquad.Members.Add(PlayerState);
 	PlayerState->SetSquadId(SquadId);
 
-	// First member becomes leader.
+	// First member becomes squad leader.
 	if (!IsValid(TargetSquad.SquadLeader))
 	{
 		TargetSquad.SquadLeader = PlayerState;
 	}
 
+	PlayerState->SetIsSquadLeader(
+		TargetSquad.SquadLeader == PlayerState);
+
+	// Update replicated squad summaries.
 	RefreshSquadSummaries();
+
+	UE_LOG(LogTemp, Log,
+		TEXT("AssignPlayerToSquad SUCCESS: Player=%s | SquadId=%d"),
+		*PlayerState->GetPlayerName(),
+		SquadId);
 
 	return true;
 }
