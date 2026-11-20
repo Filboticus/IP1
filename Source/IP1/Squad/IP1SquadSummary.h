@@ -37,6 +37,9 @@ struct FIP1SquadSummary
 
 	UPROPERTY(BlueprintReadOnly, Category = "Squad")
 	int32 MaxMembers = 6;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Squad")
+	TArray<FString> MemberNames;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Squad")
 	bool bIsLocked = false;

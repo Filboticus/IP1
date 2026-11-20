@@ -4,6 +4,7 @@
 #include "IP1SquadManager.h"
 
 #include "IP1SquadData.h"
+#include "ToolWidgetsSlateTypes.h"
 #include "UObject/UnrealType.h"
 #include "AssetRegistry/AssetDataTagMapSerializationDetails.h"
 #include "IP1/GameModes/IP1GameState.h"
@@ -338,6 +339,23 @@ TArray<FIP1SquadSummary> UIP1SquadManager::BuildSquadSummaries() const
 		Summary.MaxMembers = Squad.MaxMembers;
 		Summary.bIsLocked = Squad.bIsLocked;
 
+		// Populate squad member names.
+		Summary.MemberNames.Reset();
+		
+		for (AIP1PlayerState* Member : Squad.Members)
+		{
+			if (!IsValid(Member))
+			{
+				continue;
+			}
+			
+			const FString PlayerName = Member->GetPlayerName();
+			
+			Summary.MemberNames.Add(PlayerName);
+			
+			UE_LOG(LogTemp, Warning, TEXT("Squad %d: Added member %s"), Squad.SquadId, *PlayerName);
+		}
+		
 		Result.Add(Summary);
 	}
 

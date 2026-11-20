@@ -29,10 +29,9 @@ protected:
 	UFUNCTION()
 	void HandleSquadSummariesChanged();
 
-	UFUNCTION(BlueprintImplementableEvent,
-		Category = "Deployment|Squads")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Deployment|Squad")
 	void BP_RefreshSquadList();
-
+	
 	UPROPERTY()
 	TObjectPtr<AIP1GameState> CachedGameState;
 };

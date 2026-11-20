@@ -6,8 +6,11 @@
 
 void UIP1DeploymentWidget::RefreshDeploymentUI()
 {
+	/***  Refresh Squads ***/
+	
+	// Refresh Squads List
 	BP_RefreshSquadList();
-
+	
 	// Future:
 	// Refresh roles
 	// Refresh spawn locations
